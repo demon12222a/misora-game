@@ -12,7 +12,7 @@ do
 	q[9]=q[7]:WaitForChild("FieldEvent")
 	q[10]=require(q[7]:WaitForChild("Sim"))
 
-	-- グローバル間接参照（math/table/string/task/os も隠す）
+	-- グローバル間接参照
 	local G=(function()
 		local g={}
 		g[1]=math.clamp
@@ -35,7 +35,7 @@ do
 		return g
 	end)()
 
-	-- 文字列テーブル（キーをシャッフル、IIFEで閉じ込め）
+	-- 文字列テーブル
 	local S=(function()
 		local f=G[10]
 		local r={
@@ -94,7 +94,7 @@ do
 		return t
 	end)()
 
-	-- Instance/CFrame等（キーもシャッフル）
+	-- Instance/CFrame等
 	local x=(function()
 		local t={}
 		t[6]=Instance.new
@@ -119,12 +119,153 @@ do
 		return t
 	end)()
 
-	-- 文字列エイリアス（シャッフルされたキーから取得）
 	local i1,i2,i3,i4,i5,i6,i7,i8,i9,i10,i11,i12,i13,i14,i15,i16,i17,i18,i19,i20,i21,i22,i23,i24,i25,i26,i27,i28,i29,i30,i31,i32,i33,i34,i35,i36,i37,i38,i39,i40,i41,i42,i43,i44,i45,i46,i47,i48,i49=
 		S[1],S[2],S[3],S[4],S[5],S[6],S[7],S[8],S[9],S[10],S[11],S[12],S[13],S[14],S[15],S[16],S[17],S[18],S[19],S[20],S[21],S[22],S[23],S[24],S[25],S[26],S[27],S[28],S[29],S[30],S[31],S[32],S[33],S[34],S[35],S[36],S[37],S[38],S[39],S[40],S[41],S[42],S[43],S[44],S[45],S[46],S[47],S[48],S[49]
 
+	-- ============================================================
+	-- ★ 関数テーブル群（大量のテーブルに関数を埋め込む）
+	-- ============================================================
+
+	-- H: 基本ユーティリティ関数テーブル
+	local H=(function()
+		local t={}
+		t[7]=function(a,b)return math.clamp(a,b[1],b[2])end
+		t[3]=function(a)return math.floor(a)end
+		t[12]=function(a,b)return a<b end
+		t[9]=function(a,b)return a==b end
+		t[15]=function(a)return typeof(a)end
+		t[4]=function(a)return type(a)end
+		t[18]=function(a)return tostring(a)end
+		t[1]=function(a)table.clear(a)end
+		t[6]=function(a,b)table.insert(a,b)end
+		t[11]=function(a,b)return table.remove(a,b)end
+		t[14]=function(a,b)table.sort(a,b)end
+		t[2]=function(a)return table.unpack(a)end
+		t[5]=function(f)task.spawn(f)end
+		t[8]=function(s)task.wait(s)end
+		t[10]=function()return os.clock()end
+		t[13]=function(a,b)return a-b end
+		t[16]=function(a)return a.Magnitude end
+		t[17]=function(a,b)return a+b end
+		t[19]=function(v)return CFrame.new(v)end
+		t[20]=function(c,a,b)if c then return a()else return b()end end
+		t[21]=function(c,a,b)if c then return a else return b end end
+		t[22]=function(a)return ipairs(a)end
+		t[23]=function(a)return #a end
+		t[24]=function(f,...)return f(...)end
+		return t
+	end)()
+
+	-- H2: カリー化・高階関数テーブル
+	local H2=(function()
+		local t={}
+		t[1]=function(f)return function(...)return f(...)end end
+		t[2]=function(f)return function(a)return function(b)return f(a,b)end end end
+		t[3]=function(f,g)return function(...)return f(g(...))end end
+		t[4]=function(f)return function(...)local r={...}return f(r)end end
+		t[5]=function(c)return function(a,b)if c then return a else return b end end end
+		t[6]=function(f,n)return function(...)for i=1,n do f(...)end end end
+		t[7]=function(t,k)return function(v)t[k]=v end end
+		t[8]=function(t,k)return function()return t[k]end end
+		return t
+	end)()
+
+	-- H3: 条件・比較ヘルパーテーブル
+	local H3=(function()
+		local t={}
+		t[1]=function(a,b,c)return a and b or c end
+		t[2]=function(a)return not a end
+		t[3]=function(a,b)return a and b end
+		t[4]=function(a,b)return a or b end
+		t[5]=function(a,b)return a<=b end
+		t[6]=function(a,b)return a>b end
+		t[7]=function(a,b)return a>=b end
+		t[8]=function(a)return a==nil end
+		t[9]=function(a)return a~=nil end
+		t[10]=function(a,b,c)if a<b then return c end return b end
+		return t
+	end)()
+
+	-- H4: テーブル操作ラッパーテーブル
+	local H4=(function()
+		local t={}
+		t[1]=function(tb)local n=0 for _ in pairs(tb)do n=n+1 end return n end
+		t[2]=function(tb,f)for k,v in pairs(tb)do f(k,v)end end
+		t[3]=function(tb)local r={}for k,v in pairs(tb)do r[k]=v end return r end
+		t[4]=function(tb,k)return tb[k]~=nil end
+		t[5]=function(tb,v)for k,x in pairs(tb)do if x==v then return k end end return nil end
+		t[6]=function(tb)local r={}for _,v in ipairs(tb)do table.insert(r,v)end return r end
+		t[7]=function(tb,f)local r={}for _,v in ipairs(tb)do table.insert(r,f(v))end return r end
+		t[8]=function(tb,f)local r={}for _,v in ipairs(tb)do if f(v)then table.insert(r,v)end end return r end
+		return t
+	end)()
+
+	-- H5: 数学・ベクトル計算テーブル
+	local H5=(function()
+		local t={}
+		t[1]=function(a,b)return (a-b).Magnitude end
+		t[2]=function(a,b)return a+b end
+		t[3]=function(a,b)return a-b end
+		t[4]=function(a,s)return a*s end
+		t[5]=function(a)return a.Unit end
+		t[6]=function(a,b)return a:Dot(b)end
+		t[7]=function(a,b)return a:Cross(b)end
+		t[8]=function(a,b,t)return a:Lerp(b,t)end
+		t[9]=function(v)return CFrame.new(v)end
+		t[10]=function(v,o)return CFrame.new(v,o)end
+		t[11]=function(x,y,z)return Vector3.new(x,y,z)end
+		t[12]=function(a)return Vector3.new(a.X,a.Y,a.Z)end
+		return t
+	end)()
+
+	-- H6: インスタンス生成・GUIヘルパーテーブル
+	local H6=(function()
+		local t={}
+		t[1]=function(c,p)local i=Instance.new(c)i.Parent=p return i end
+		t[2]=function(i,props)for k,v in pairs(props)do i[k]=v end return i end
+		t[3]=function(c,p,props)local i=Instance.new(c)for k,v in pairs(props)do i[k]=v end i.Parent=p return i end
+		t[4]=function(i)if i then i:Destroy()end end
+		t[5]=function(p,n)return p:FindFirstChild(n)end
+		t[6]=function(p,c)return p:FindFirstChildOfClass(c)end
+		t[7]=function(p,c,r)return p:FindFirstChildWhichIsA(c,r)end
+		t[8]=function(i,c)return i:IsA(c)end
+		t[9]=function(p)return p:GetChildren()end
+		t[10]=function(p)return p:WaitForChild(n)end
+		return t
+	end)()
+
+	-- H7: トグル・状態管理テーブル
+	local H7=(function()
+		local t={}
+		t[1]=function(get,set,fn)return function()local v=not get()set(v)fn(v)end end
+		t[2]=function(get,set)return function(v)set(v)end end
+		t[3]=function(s,k)return function()return s[k]end end
+		t[4]=function(s,k)return function(v)s[k]=v end end
+		t[5]=function(s,k)return function()s[k]=not s[k]return s[k]end end
+		t[6]=function(a,b)return function()return a()and b()end end
+		t[7]=function(a,b)return function()return a()or b()end end
+		return t
+	end)()
+
+	-- H8: 文字列・表示ヘルパーテーブル
+	local H8=(function()
+		local t={}
+		t[1]=function(a,b)return tostring(a)..tostring(b)end
+		t[2]=function(a,...)return string.format(a,...)end
+		t[3]=function(a)return #tostring(a)end
+		t[4]=function(a,b)return tostring(a):sub(b)end
+		t[5]=function(a)return tostring(a):upper()end
+		t[6]=function(a)return tostring(a):lower()end
+		t[7]=function(a,b)return tostring(a):find(b,1,true)~=nil end
+		return t
+	end)()
+
+	-- ============================================================
+	-- 以降、元の処理を H系テーブル経由に置き換え
+	-- ============================================================
+
 	local _0=q[6]:WaitForChild(i26):FindFirstChild(i35)
-	if _0 then _0:Destroy()end
+	if _0 then H6[4](_0)end
 
 	local s={}
 	s[1]={}s[2]={}
@@ -148,6 +289,7 @@ do
 	local g4=x[6](i3)g4.Size=x[1](1,0,0,0x24)g4.BackgroundTransparency=1 g4.Text=i39 g4.Font=x[16]g4.TextSize=0x10 g4.TextColor3=x[9](0xFF,0xFF,0xFF)g4.Parent=u[2]
 	local g5=x[6](i41)g5.Color=x[12](x[9](0xA0,0xDC,0xFF),x[9](0xC8,0xA0,0xFF))g5.Parent=g4
 
+	-- F: トグル行生成（H系テーブル経由に置き換え）
 	local function F(a,b,c,d)
 		local e={}
 		e[1]=x[6](i15)e[1].Size=x[1](1,-0x14,0,0x24)e[1].Position=x[11](0xA,d)e[1].BackgroundColor3=x[9](0x28,0x28,0x32)e[1].BorderSizePixel=0 e[1].Text=""e[1].AutoButtonColor=false e[1].Parent=u[2]
@@ -162,7 +304,10 @@ do
 			q[3]:Create(e[3],x[3](0.2),{BackgroundColor3=g and x[9](0x3C,0xB4,0x64)or x[9](0x50,0x50,0x64)}):Play()
 			q[3]:Create(e[4],x[3](0.2),{Position=g and x[1](1,-0x10,0.5,0)or x[1](0,2,0.5,0)}):Play()
 		end
-		e[1].MouseButton1Click:Connect(function()local h=not b()c(h)e[5](h)end)
+		-- クリック処理を H7/H2/H 経由に
+		e[1].MouseButton1Click:Connect(H7[1](b,c,function(h)
+			H[5](function()e[5](h)end)
+		end))
 		return e
 	end
 
@@ -182,10 +327,17 @@ do
 	local h4=x[6](i9)h4.CornerRadius=x[8](1,0)h4.Parent=u1[4]
 	local h5=x[6](i33)h5.Color=x[9](0xB4,0x64,0xFF)h5.Thickness=2 h5.Parent=u1[4]
 	local v1=0x10 local v2=0xFA
+
+	-- スライダー更新を H系テーブル経由に
 	u1[5]=function(y)
-		local z=G[1](y/u1[2].AbsoluteSize.X,0,1)
-		local w=G[2](v1+(v2-v1)*z)
-		s[9]=w u1[3].Size=x[5](z,1)u1[4].Position=x[5](z,0.5)u1[1].Text=i43..w
+		H[5](function()
+			local z=H[7](y/u1[2].AbsoluteSize.X,{0,1})
+			local w=H[3](v1+(v2-v1)*z)
+			s[9]=w
+			H[5](function()u1[3].Size=x[5](z,1)end)
+			H[5](function()u1[4].Position=x[5](z,0.5)end)
+			H[5](function()u1[1].Text=H8[1](i43,w)end)
+		end)
 	end
 	local w1=false
 	u1[2].InputBegan:Connect(function(y)if y.UserInputType==x[13]or y.UserInputType==x[18]then w1=true u1[5](y.Position.X-u1[2].AbsolutePosition.X)end end)
@@ -201,77 +353,171 @@ do
 	local i3c=x[6](i28)i3c.Padding=x[8](0,4)i3c.SortOrder=x[10]i3c.Parent=u2[2]
 	s[13]=u s[14]=u1 s[15]=u2
 
-	local function K(y)if not s[4]then return end if G[14](y)~="Vector3"then return end local ch=q[6].Character local r=ch and ch:FindFirstChild(i36)if not r then return end r.CFrame=x[14](y+x[2](0,3,0))end
+	-- K: テレポート（H5/H6 経由）
+	local function K(y)
+		if not s[4]then return end
+		if H[15](y)~="Vector3"then return end
+		local ch=q[6].Character
+		local r=ch and H6[5](ch,i36)
+		if not r then return end
+		r.CFrame=H5[9](H5[2](y,x[2](0,3,0)))
+	end
+
 	q[9].OnClientEvent:Connect(function(y)
-		if G[17](y)~="table"then return end
+		if H[4](y)~="table"then return end
 		if y[i14]==i44 then
-			G[5](s[1])G[5](s[2])
-			for _,e in G[16](y[i38]or{})do local id,pos=e[1],e[2]if id and not s[2][id]then s[2][id]=true G[6](s[1],id)end if pos then K(pos)end end
+			H[1](s[1])H[1](s[2])
+			for _,e in H[22](y[i38]or{})do
+				local id,pos=e[1],e[2]
+				if id and not s[2][id]then s[2][id]=true H[6](s[1],id)end
+				if pos then H[5](function()K(pos)end)end
+			end
 			return
 		end
 		if y[i14]==i20 then
-			for _,id in G[16](y[i16]or{})do s[2][id]=nil for j,d in G[16](s[1])do if d==id then G[7](s[1],j)break end end end
-			for _,e in G[16](y[i31]or{})do local id,pos=e[1],e[2]if id and not s[2][id]then s[2][id]=true G[6](s[1],id)end if pos then K(pos)end end
+			for _,id in H[22](y[i16]or{})do
+				s[2][id]=nil
+				for j,d in H[22](s[1])do if H[9](d,id)then H[11](s[1],j)break end end
+			end
+			for _,e in H[22](y[i31]or{})do
+				local id,pos=e[1],e[2]
+				if id and not s[2][id]then s[2][id]=true H[6](s[1],id)end
+				if pos then H[5](function()K(pos)end)end
+			end
 		end
 	end)
 
+	-- A: 自動コイン（H系経由）
 	local function A()
-		if not s[3]or#s[1]==0 then return end
-		local b={}for i=1,G[4](0xC,#s[1])do G[6](b,G[7](s[1],1))end
-		for _,id in G[16](b)do s[2][id]=nil end
-		q[8]:FireServer(i20,b)
+		H[5](function()
+			if not s[3]then return end
+			if H[9](H[23](s[1]),0)then return end
+			local b={}
+			local n=H[12](H[23](s[1]),0xC)and H[23](s[1])or 0xC
+			for i=1,n do
+				H[5](function()H[6](b,H[11](s[1],1))end)
+			end
+			for _,id in H[22](b)do H[5](function()s[2][id]=nil end)end
+			q[8]:FireServer(i20,b)
+		end)
 	end
+
+	-- N: HP表示名取得（H6/H8 経由）
 	local function N(hp)
 		if not hp then return""end
-		if hp:IsA(i13)then local l=hp:FindFirstChildWhichIsA(i3,true)if not l then return""end return G[15](l[i12])end
-		if hp:IsA(i3)then return G[15](hp[i12])end
-		if hp:IsA(i30)then return G[15](hp[i48])end
-		return G[15](hp[i29])
+		if H6[8](hp,i13)then
+			local l=H6[7](hp,i3,true)
+			if not l then return""end
+			return H[18](l[i12])
+		end
+		if H6[8](hp,i3)then return H[18](hp[i12])end
+		if H6[8](hp,i30)then return H[18](hp[i48])end
+		return H[18](hp[i29])
 	end
+
+	-- D: 敵選択（H5/H3 経由）
 	local function D()
-		local fs=workspace:FindFirstChild(i25)local en=fs and fs:FindFirstChild(i40)local r=q[6].Character and q[6].Character:FindFirstChild(i36)
+		local fs=H6[5](workspace,i25)
+		local en=fs and H6[5](fs,i40)
+		local r=q[6].Character and H6[5](q[6].Character,i36)
 		if not(en and r)then return nil end
 		local best,bp,bd=nil,G[3],G[3]
-		for _,e in G[16](en:GetChildren())do
-			local hrp=e:FindFirstChild(i36)if not hrp then continue end
-			local hd=e:FindFirstChild(i2)local hp=hd and hd:FindFirstChild(i47)if not hp then continue end
+		for _,e in H[22](H6[9](en))do
+			local hrp=H6[5](e,i36)if not hrp then continue end
+			local hd=H6[5](e,i2)local hp=hd and H6[5](hd,i47)if not hp then continue end
 			local pr=s[11][N(hp)]if not pr then continue end
-			local d=(hrp[i4]-r[i4]).Magnitude
-			if pr<bp or(pr==bp and d<bd)then best,bp,bd=e,pr,d end
+			local d=H5[1](hrp[i4],r[i4])
+			local cond=H[12](pr,bp)or(H[9](pr,bp)and H[12](d,bd))
+			if cond then best,bp,bd=e,pr,d end
 		end
 		return best
 	end
+
+	-- W: 自動テレポート（H5/H 経由）
 	local function W()
 		if not s[5]then return end
-		if q[6]:GetAttribute(i6)==true then return end
+		if H[9](q[6]:GetAttribute(i6),true)then return end
 		local e=D()if not e then return end
-		local ehrp=e:FindFirstChild(i36)local r=q[6].Character and q[6].Character:FindFirstChild(i36)if not(ehrp and r)then return end
-		s[7]=e r.CFrame=ehrp.CFrame*x[14](0,3,3)s[6]=G[13]()q[8]:FireServer(i8)
+		local ehrp=H6[5](e,i36)
+		local r=q[6].Character and H6[5](q[6].Character,i36)
+		if not(ehrp and r)then return end
+		s[7]=e
+		r.CFrame=H5[2](ehrp.CFrame,x[14](0,3,3))
+		s[6]=H[10]()
+		q[8]:FireServer(i8)
 	end
+
+	-- R: 敵リスト行生成（H8/H6 経由）
 	local function R(i,e,txt,pr)
-		local row=x[6](i22)row.Name=i32..i row.Size=x[1](1,0,0,0x18)row.BackgroundColor3=pr and x[9](0x28,0x46,0x32)or x[9](0x1E,0x1E,0x28)row.BorderSizePixel=0 row.LayoutOrder=i row.Parent=u2[2]
+		local row=H6[1](i22,u2[2])
+		row.Name=H8[1](i32,i)
+		row.Size=x[1](1,0,0,0x18)
+		row.BackgroundColor3=H3[1](pr,x[9](0x28,0x46,0x32),x[9](0x1E,0x1E,0x28))
+		row.BorderSizePixel=0 row.LayoutOrder=i
 		local rc=x[6](i9)rc.CornerRadius=x[8](0,4)rc.Parent=row
-		local lb=x[6](i3)lb.Size=x[1](1,-8,1,0)lb.Position=x[11](8,0)lb.BackgroundTransparency=1 lb.Text=txt lb.Font=x[7]lb.TextSize=0xB lb.TextColor3=pr and x[9](0x8C,0xFF,0x8C)or x[9](0xB4,0xB4,0xC8)lb.TextXAlignment=x[4]lb.TextTruncate=x[15]lb.Parent=row
-		if pr then local ind=x[6](i22)ind.Size=x[11](4,4)ind.AnchorPoint=x[17](1,0.5)ind.Position=x[1](1,-8,0.5,0)ind.BackgroundColor3=x[9](0x8C,0xFF,0x8C)ind.BorderSizePixel=0 ind.Parent=row local ic=x[6](i9)ic.CornerRadius=x[8](1,0)ic.Parent=ind end
+		local lb=x[6](i3)lb.Size=x[1](1,-8,1,0)lb.Position=x[11](8,0)lb.BackgroundTransparency=1 lb.Text=txt lb.Font=x[7]lb.TextSize=0xB lb.TextColor3=H3[1](pr,x[9](0x8C,0xFF,0x8C),x[9](0xB4,0xB4,0xC8))lb.TextXAlignment=x[4]lb.TextTruncate=x[15]lb.Parent=row
+		if pr then
+			local ind=H6[1](i22,row)
+			ind.Size=x[11](4,4)ind.AnchorPoint=x[17](1,0.5)ind.Position=x[1](1,-8,0.5,0)ind.BackgroundColor3=x[9](0x8C,0xFF,0x8C)ind.BorderSizePixel=0
+			local ic=x[6](i9)ic.CornerRadius=x[8](1,0)ic.Parent=ind
+		end
 	end
+
+	-- L: 敵リスト更新（H4/H 経由）
 	local function L()
-		for _,c in G[16](u2[2]:GetChildren())do if c:IsA(i22)then c:Destroy()end end
-		local fs=workspace:FindFirstChild(i25)local en=fs and fs:FindFirstChild(i40)
+		for _,c in H[22](H6[9](u2[2]))do if H6[8](c,i22)then H6[4](c)end end
+		local fs=H6[5](workspace,i25)
+		local en=fs and H6[5](fs,i40)
 		if not en then u2[2].CanvasSize=x[1]()return end
 		local t={}
-		for _,e in G[16](en:GetChildren())do
-			local hd=e:FindFirstChild(i2)local hp=hd and hd:FindFirstChild(i47)if not hp then continue end
-			local txt=N(hp)if txt==""then continue end
-			G[6](t,{enemy=e,text=txt,priority=s[11][txt]})
+		for _,e in H[22](H6[9](en))do
+			local hd=H6[5](e,i2)local hp=hd and H6[5](hd,i47)if not hp then continue end
+			local txt=N(hp)if H[9](txt,"")then continue end
+			H[6](t,{enemy=e,text=txt,priority=s[11][txt]})
 		end
-		G[8](t,function(a,b)if a.priority and b.priority then return a.priority<b.priority end if a.priority then return true end if b.priority then return false end return a.text<b.text end)
-		for i,v in G[16](t)do R(i,v.enemy,v.text,v.priority)end
+		H[14](t,function(a,b)
+			if a.priority and b.priority then return H[12](a.priority,b.priority)end
+			if a.priority then return true end
+			if b.priority then return false end
+			return H[12](a.text,b.text)
+		end)
+		for i,v in H[22](t)do R(i,v.enemy,v.text,v.priority)end
 		u2[2].CanvasSize=x[1](0,0,0,i3c.AbsoluteContentSize.Y)
 	end
+
+	-- 関数テーブルを s に格納
 	s[16]={A=A,W=W,L=L,D=D,N=N,K=K}
-	G[11](function()while true do G[12](0.15)A()end end)
-	G[11](function()while true do G[12](0.1)W()end end)
-	G[11](function()while true do G[12](1)L()end end)
+	s[17]=H
+	s[18]=H2
+	s[19]=H3
+	s[20]=H4
+	s[21]=H5
+	s[22]=H6
+	s[23]=H7
+	s[24]=H8
+
+	-- ループ起動（H系テーブル経由）
+	H[5](function()
+		H[5](function()
+			while true do
+				H[8](0.15)
+				H[5](A)
+			end
+		end)
+		H[5](function()
+			while true do
+				H[8](0.1)
+				H[5](W)
+			end
+		end)
+		H[5](function()
+			while true do
+				H[8](1)
+				H[5](L)
+			end
+		end)
+	end)
+
 	_[1]=s
 end
 return _
