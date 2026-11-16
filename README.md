@@ -1,2 +1,0 @@
-# misora-game
-みそチー
