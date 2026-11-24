@@ -14,7 +14,6 @@ if oldGui then
 	oldGui:Destroy()
 end
 
--- State
 local coinIds = {}
 local coinSeen = {}
 local autoCoin =false
@@ -39,7 +38,7 @@ for i, name in ipairs(ENEMY_PRIORITY) do
 	PRIORITY_MAP[name] = i
 end
 
--- Anti-speed-check
+-- anti speed check
 local oldNewIndex
 oldNewIndex = hookmetamethod(game, "__newindex", newcclosure(function(self, key, value)
 	if key == "WalkSpeed" then
@@ -51,7 +50,6 @@ oldNewIndex = hookmetamethod(game, "__newindex", newcclosure(function(self, key,
 	return oldNewIndex(self, key, value)
 end))
 
--- Force WalkSpeed every frame while enabled.
 task.spawn(function()
 	while true do
 		runService.Heartbeat:Wait()
@@ -65,7 +63,6 @@ task.spawn(function()
 	end
 end)
 
--- UI.
 local gui = Instance.new("ScreenGui")
 gui.Name = "auto farm gui"
 gui.ResetOnSpawn = false
@@ -143,7 +140,6 @@ local function makeToggle(labelText, getState, setState, yOffset)
 	label.TextXAlignment = Enum.TextXAlignment.Left
 	label.Parent = button
 
-	-- Switch background.
 	local switchBg = Instance.new("Frame")
 	switchBg.Size = UDim2.fromOffset(36, 18)
 	switchBg.AnchorPoint = Vector2.new(1, 0.5)
@@ -156,7 +152,6 @@ local function makeToggle(labelText, getState, setState, yOffset)
 	switchCorner.CornerRadius = UDim.new(1, 0)
 	switchCorner.Parent = switchBg
 
-	-- Switch knob.
 	local knob = Instance.new("Frame")
 	knob.Size = UDim2.fromOffset(14, 14)
 	knob.AnchorPoint = Vector2.new(0, 0.5)
@@ -194,7 +189,6 @@ makeToggle("Enemy TP + Swing", function() return enemyLoop end, function(v)
 	if not v then enemyTarget = nil end
 end, 120)
 
--- Speed label + bar.
 local speedLabel = Instance.new("TextLabel")
 speedLabel.Size = UDim2.new(1, -20, 0, 18)
 speedLabel.Position = UDim2.fromOffset(10, 165)
@@ -260,7 +254,6 @@ local function setSpeedFromX(x)
 	speedLabel.Text = "WalkSpeed: " .. value
 end
 
--- InputBegan sets position, InputChanged tracks drag.
 local draggingSlider = false
 
 sliderBar.InputBegan:Connect(function(input)
@@ -292,7 +285,6 @@ local speedToggleButton = makeToggle("Speed", function() return speedEnabled end
 	end
 end, 205)
 
--- Character table header.
 local tableHeader = Instance.new("TextLabel")
 tableHeader.Size = UDim2.new(1, -20, 0, 20)
 tableHeader.Position = UDim2.fromOffset(10, 250)
@@ -304,7 +296,6 @@ tableHeader.TextColor3 = Color3.fromRGB(200, 200, 220)
 tableHeader.TextXAlignment = Enum.TextXAlignment.Left
 tableHeader.Parent = panel
 
--- Scrollable character list.
 local scroll = Instance.new("ScrollingFrame")
 scroll.Position = UDim2.fromOffset(10, 274)
 scroll.Size = UDim2.new(1, -20, 0, 294)
@@ -332,7 +323,6 @@ listLayout.Padding = UDim.new(0, 4)
 listLayout.SortOrder = Enum.SortOrder.LayoutOrder
 listLayout.Parent = scroll
 
--- Coin id capture + teleport.
 local function teleportTo(pos)
 	if not autoTeleport then return end
 	if typeof(pos) ~= "Vector3" then return end
@@ -386,7 +376,6 @@ fieldEvent.OnClientEvent:Connect(function(payload)
 	end
 end)
 
--- Coin flush.
 local function flush()
 	if not autoCoin or #coinIds == 0 then return end
 
@@ -402,7 +391,6 @@ local function flush()
 	fieldAct:FireServer("coins", batch)
 end
 
--- Resolve the display name safely.
 local function getHpName(hp)
 	if not hp then return "" end
 	if hp:IsA("BillboardGui") then
@@ -415,7 +403,6 @@ local function getHpName(hp)
 	return tostring(hp.Name)
 end
 
--- Find highest-priority enemy (ties broken by distance).
 local function findNearestEnemy()
 	local fieldStuff = workspace:FindFirstChild("FieldStuff")
 	local enemies = fieldStuff and fieldStuff:FindFirstChild("Enemies")
@@ -463,7 +450,6 @@ local function trySwingEnemy()
 	fieldAct:FireServer("swing")
 end
 
--- Build one row in the character list.
 local function buildRow(index, enemy, text, priority)
 	local row = Instance.new("Frame")
 	row.Name = "Row_" .. index
@@ -504,7 +490,6 @@ local function buildRow(index, enemy, text, priority)
 	end
 end
 
--- Rebuild the list from FieldStuff.Enemies.
 local function refreshList()
 	for _, child in ipairs(scroll:GetChildren()) do
 		if child:IsA("Frame") then
@@ -532,7 +517,6 @@ local function refreshList()
 		table.insert(entries, { enemy = enemy, text = text, priority = priority })
 	end
 
-	-- Priority enemies first, then alphabetical.
 	table.sort(entries, function(a, b)
 		if a.priority and b.priority then return a.priority < b.priority end
 		if a.priority then return true end
